@@ -9,6 +9,7 @@ import Foundation
 
 typealias ProgressHandler = ((Progress)->())?
 
+public typealias NW = NWInterface
 
 public class NWInterface {
     public static func fire<Successful: Codable, Failure: Error>() async -> Result<Successful,Failure> {
