@@ -151,8 +151,11 @@ private extension NWAlamofireKernel {
             parameters: request.body,
             headers: header,
             interceptor: request.interceptors(),
-            requestModifier: nil
+            requestModifier: { req in
+                try self.requestModifier(request, urlRequest: &req)
+            }
         )
+        
         request.afRequest = afRequest
         return afRequest
     }
@@ -183,7 +186,9 @@ private extension NWAlamofireKernel {
             headers: header,
             interceptor: request.interceptors(),
             fileManager: FileManager.default,
-            requestModifier: nil
+            requestModifier: { req in
+                try self.requestModifier(request, urlRequest: &req)
+            }
         )
         request.afRequest = afRequest
         return afRequest
@@ -204,10 +209,21 @@ private extension NWAlamofireKernel {
             parameters: request.body,
             headers: header,
             interceptor: request.interceptors(),
-            requestModifier: nil,
+            requestModifier: { req in
+                try self.requestModifier(request, urlRequest: &req)
+            },
             to: request.destination
         )
         request.afRequest = afRequest
         return afRequest
+    }
+}
+
+private extension NWAlamofireKernel {
+    func requestModifier<T: Json>(
+        _ request: NWRequest<T>,
+        urlRequest: inout URLRequest
+    ) throws {
+        urlRequest.timeoutInterval = request.timeout()
     }
 }
