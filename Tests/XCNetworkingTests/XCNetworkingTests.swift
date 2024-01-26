@@ -57,7 +57,7 @@ final class XCNetworkingTests: XCTestCase {
 class BaseRequest<T: Json>: NWRequest<T> {
     
     override func host() -> String {
-        return "lightapi.gr77.cn"
+        return "baidu.com"
     }
     
     override func path() -> String {
