@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "XCNetworking",
+    name: "networking",
     platforms: [
         .macOS(.v10_15),
         .iOS(.v13),
@@ -13,8 +13,8 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "XCNetworking",
-            targets: ["XCNetworking"]),
+            name: "networking",
+            targets: ["networking"]),
     ],
     dependencies: [
         .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.7.0"),
@@ -22,13 +22,13 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "XCNetworking",
+            name: "networking",
             dependencies: [
                 "Alamofire",
                 .product(name: "Logging", package: "swift-log"),
             ]),
         .testTarget(
             name: "XCNetworkingTests",
-            dependencies: ["XCNetworking"]),
+            dependencies: ["networking"]),
     ]
 )
