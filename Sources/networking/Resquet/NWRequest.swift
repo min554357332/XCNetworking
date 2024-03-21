@@ -10,7 +10,7 @@ import Alamofire
 // <T: Decodable>(of type: T.Type,
 open class NWRequest<T: Json> {
     
-    init() {}
+    public init() {}
     
     public typealias ProgressHandler = (Progress) -> Void
     
