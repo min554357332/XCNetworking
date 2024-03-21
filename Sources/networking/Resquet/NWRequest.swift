@@ -9,7 +9,9 @@ import Foundation
 import Alamofire
 // <T: Decodable>(of type: T.Type,
 open class NWRequest<T: Json> {
-        
+    
+    init() {}
+    
     public typealias ProgressHandler = (Progress) -> Void
     
     open func scheme() -> String {

@@ -50,6 +50,7 @@ final class XCNetworkingTests: XCTestCase {
     }
     func download(progress: Progress) {
         Logger(label: "test").info(.init(stringLiteral: "\(progress.totalUnitCount / progress.completedUnitCount)"))
+        XCTee<BaseModel>()
     }
 }
 
@@ -70,6 +71,12 @@ class BaseRequest<T: Json>: NWRequest<T> {
     
     override func interceptors() -> NWInterceptor? {
         return BaseRequestInterceptor()
+    }
+}
+
+class XCTee<T: Json>: BaseRequest<T> {
+    override func path() -> String {
+        return "/light/v1/user_info"
     }
 }
 
