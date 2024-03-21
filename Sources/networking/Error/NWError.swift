@@ -88,6 +88,13 @@ public struct NWError: NWErrorProtocol, DebuggableError {
     }
 }
 
+extension Error {
+    /// Returns the instance cast as an `NWError`.
+    public var asNWError: NWError? {
+        self as? NWError
+    }
+}
+
 @available(*, deprecated, renamed: "Redirect")
 public enum RedirectType {
     /// A cacheable redirect. Not all user-agents preserve request method and body, so
