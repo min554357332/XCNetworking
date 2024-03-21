@@ -226,5 +226,6 @@ private extension NWAlamofireKernel {
         urlRequest: inout URLRequest
     ) throws {
         urlRequest.timeoutInterval = request.timeout()
+        request.header = urlRequest.headers.dictionary
     }
 }
