@@ -45,6 +45,9 @@ class NWAdapter {
                 return .success(model)
             } catch {
                 return .failure(NWError(NWResponseStatus(statusCode: 10003),
+                                        headers: NWHeaders(request.header?.map({ key, val in
+                    return [(key, val)]
+                }) as! [(String, String)]),
                                         reason: error.localizedDescription))
             }
         case .failure(let error):
