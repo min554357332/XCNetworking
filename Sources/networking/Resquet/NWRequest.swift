@@ -70,10 +70,10 @@ open class NWRequest<T: Json> {
         return nil
     }
     
-    var header: [String: String]?
-    var query: [String: String?]?
-    var body: [String: Any]?
-    var fromData: [String: Any]?
+    public var header: [String: String]?
+    public var query: [String: String?]?
+    public var body: [String: Any]?
+    public var fromData: [String: Any]?
     public var files: [URL?]?
     public var responsePreprocessor: DataPreprocessor?
     
