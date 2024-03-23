@@ -163,7 +163,7 @@ extension URLRequest: NWRequestTypesProtocol {
         static let nw_request = UnsafeRawPointer.init(bitPattern: "nw_request".hashValue)!
     }
     
-    var nwRequest: Any? {
+    public var nwRequest: Any? {
         get {
             return objc_getAssociatedObject(self, URLRequest.RuntimeKey.nw_request)
         }
@@ -176,7 +176,7 @@ extension URLRequest: NWRequestTypesProtocol {
         return self.nwRequest as? NWRequest<T>
     }
     
-    func needLogin() -> Bool {
+    public func needLogin() -> Bool {
         if self.nwRequest == nil { return false }
         for t in URLRequest.types {
             if t == type(of: self.nwRequest) {
