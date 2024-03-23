@@ -150,7 +150,7 @@ extension URLRequest {
         static var _nwRequestProperty = [String:Any]()
     }
     
-    var nwRequest: Any? {
+    public var nwRequest: Any? {
         get {
             return Holder._nwRequestProperty[self.debugDescription]
         }
