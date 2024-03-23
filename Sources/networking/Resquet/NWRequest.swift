@@ -174,7 +174,7 @@ extension URLRequest: NWRequestTypesProtocol {
                 self,
                 RuntimeKey.nw_request,
                 newValue,
-                .OBJC_ASSOCIATION_COPY_NONATOMIC
+                .OBJC_ASSOCIATION_RETAIN_NONATOMIC
             )
         }
     }
