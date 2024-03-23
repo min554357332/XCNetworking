@@ -8,9 +8,9 @@
 import Foundation
 import Alamofire
 // <T: Decodable>(of type: T.Type,
-open class NWRequest<T: Json> {
+open class NWRequest<T: Json>: NSObject {
     
-    public init() {}
+    public override init() {}
     
     public typealias ProgressHandler = (Progress) -> Void
     
