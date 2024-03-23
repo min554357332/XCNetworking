@@ -159,23 +159,35 @@ public extension NWRequestTypesProtocol {
 
 extension URLRequest: NWRequestTypesProtocol {
     
-    private struct RuntimeKey {
-//        static let nw_request = "nw_request"
-        static let nw_request = UnsafeRawPointer.init(bitPattern: "nw_request".hashValue)!
+//    private struct RuntimeKey {
+//        static let nw_request = UnsafeRawPointer.init(bitPattern: "nw_request".hashValue)!
+//    }
+//    
+//    public var nwRequest: Any? {
+//        get {
+//            return objc_getAssociatedObject(self, RuntimeKey.nw_request)
+//        }
+//        set {
+//            _ = RuntimeKey.nw_request
+//            objc_setAssociatedObject(
+//                self,
+//                RuntimeKey.nw_request,
+//                newValue,
+//                .OBJC_ASSOCIATION_RETAIN
+//            )
+//        }
+//    }
+    
+    private struct Holder {
+        static var _nwRequestProperty = [String:Any]()
     }
     
-    public var nwRequest: Any? {
+    var nwRequest: Any? {
         get {
-            return objc_getAssociatedObject(self, RuntimeKey.nw_request)
+            return Holder._nwRequestProperty[self.debugDescription]
         }
         set {
-            _ = RuntimeKey.nw_request
-            objc_setAssociatedObject(
-                self,
-                RuntimeKey.nw_request,
-                newValue,
-                .OBJC_ASSOCIATION_RETAIN
-            )
+            Holder._nwRequestProperty[self.debugDescription] = newValue
         }
     }
     
@@ -192,5 +204,6 @@ extension URLRequest: NWRequestTypesProtocol {
         }
         return true
     }
+    
     
 }
