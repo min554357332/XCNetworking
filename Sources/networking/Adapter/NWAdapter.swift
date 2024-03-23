@@ -16,12 +16,18 @@ typealias NWContinuation = UnsafeContinuation<NWKernelResult, Never>
 
 public protocol Json: Codable {
     static func decode<T: Json>(json: [AnyHashable: Any]) throws -> T
+    static func decode<T: Json>(data: Data) throws -> T
     func encode() throws -> [AnyHashable: Any]
 }
 
 public extension Json {
     static func decode<T: Json>(json: [AnyHashable: Any]) throws -> T {
         let data = try JSONSerialization.data(withJSONObject: json)
+        let obj = try JSONDecoder().decode(T.self, from: data)
+        return obj
+    }
+    
+    static func decode<T: Json>(data: Data) throws -> T {
         let obj = try JSONDecoder().decode(T.self, from: data)
         return obj
     }
