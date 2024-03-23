@@ -144,11 +144,11 @@ extension NWRequest {
 }
 
 
-protocol NWRequestTypesProtocol {
+public protocol NWRequestTypesProtocol {
     static var types: [Any.Type] { get }
 }
 
-extension NWRequestTypesProtocol {
+public extension NWRequestTypesProtocol {
     static var types: [Any.Type] {
         get {
             return []
