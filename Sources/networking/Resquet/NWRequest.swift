@@ -180,10 +180,10 @@ extension URLRequest: NWRequestTypesProtocol {
         if self.nwRequest == nil { return false }
         for t in URLRequest.types {
             if t == type(of: self.nwRequest) {
-                return true
+                return false
             }
         }
-        return false
+        return true
     }
     
 }
