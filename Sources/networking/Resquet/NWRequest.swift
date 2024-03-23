@@ -142,3 +142,48 @@ extension NWRequest {
     }
     
 }
+
+
+protocol NWRequestTypesProtocol {
+    static var types: [Any.Type] { get }
+}
+
+extension NWRequestTypesProtocol {
+    static var types: [Any.Type] {
+        get {
+            return []
+        }
+    }
+}
+
+
+extension URLRequest: NWRequestTypesProtocol {
+    
+    struct RuntimeKey {
+        static let nw_request = UnsafeRawPointer.init(bitPattern: "nw_request".hashValue)!
+    }
+    
+    var nwRequest: Any? {
+        get {
+            return objc_getAssociatedObject(self, URLRequest.RuntimeKey.nw_request)
+        }
+        set {
+            objc_setAssociatedObject(self, URLRequest.RuntimeKey.nw_request, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+    }
+    
+    private func asNWRequest<T: Json>() -> NWRequest<T>? {
+        return self.nwRequest as? NWRequest<T>
+    }
+    
+    func needLogin() -> Bool {
+        if self.nwRequest == nil { return false }
+        for t in URLRequest.types {
+            if t == type(of: self.nwRequest) {
+                return true
+            }
+        }
+        return false
+    }
+    
+}
