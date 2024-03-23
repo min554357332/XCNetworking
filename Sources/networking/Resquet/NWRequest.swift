@@ -142,3 +142,20 @@ extension NWRequest {
     }
     
 }
+
+
+
+extension URLRequest {
+    private struct Holder {
+        static var _nwRequestProperty = [String:Any]()
+    }
+    
+    var nwRequest: Any? {
+        get {
+            return Holder._nwRequestProperty[self.debugDescription]
+        }
+        set {
+            Holder._nwRequestProperty[self.debugDescription] = newValue
+        }
+    }
+}
