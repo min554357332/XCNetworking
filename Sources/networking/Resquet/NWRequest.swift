@@ -148,17 +148,8 @@ public protocol NWRequestTypesProtocol {
     static var types: [Any.Type] { get }
 }
 
-public extension NWRequestTypesProtocol {
-    static var types: [Any.Type] {
-        get {
-            return []
-        }
-    }
-}
-
-
 extension URLRequest: NWRequestTypesProtocol {
-    
+// 狗日的，struct走objc_getAssociatedObject取出来是nil
 //    private struct RuntimeKey {
 //        static let nw_request = UnsafeRawPointer.init(bitPattern: "nw_request".hashValue)!
 //    }
@@ -177,6 +168,12 @@ extension URLRequest: NWRequestTypesProtocol {
 //            )
 //        }
 //    }
+    
+    public static var types: [Any.Type] {
+        get {
+            return []
+        }
+    }
     
     private struct Holder {
         static var _nwRequestProperty = [String:Any]()
