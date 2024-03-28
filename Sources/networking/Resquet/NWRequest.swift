@@ -102,28 +102,23 @@ open class NWRequest<T: Json> {
     
     
     public func url() throws -> URL {
+        var urlComponents = URLComponents()
+        urlComponents.scheme = self.scheme()
         if self.host().hasPort() {
             let deconstruction = self.host().components(separatedBy: ":")
             var urlComponents = URLComponents()
-            urlComponents.scheme = self.scheme()
             urlComponents.host = deconstruction[0]
             urlComponents.port = Int(deconstruction[1])
-            urlComponents.path = self.path()
-            urlComponents.queryItems = self.query?.map({ k,v in
-                return URLQueryItem(name: k, value: v)
-            })
-            return try urlComponents.asURL()
         } else {
             var urlComponents = URLComponents()
             urlComponents.scheme = self.scheme()
             urlComponents.host = self.host()
-            urlComponents.path = self.path()
-            urlComponents.queryItems = self.query?.map({ k,v in
-                return URLQueryItem(name: k, value: v)
-            })
-            return try urlComponents.asURL()
         }
-
+        urlComponents.path = self.path()
+        urlComponents.queryItems = self.query?.map({ k,v in
+            return URLQueryItem(name: k, value: v)
+        })
+        return try urlComponents.asURL()
     }
     
 }
