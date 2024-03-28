@@ -28,4 +28,10 @@ public struct NWInterface {
     ) async -> NWResult<T> {
         return await NWAdapter.download(request)
     }
+    
+    public static func stream<T: Json>(
+        _ request: NWRequest<T>
+    ) async -> Result<(), NWError> {
+        return await NWAdapter.stream(request)
+    }
 }

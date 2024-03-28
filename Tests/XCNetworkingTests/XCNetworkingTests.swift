@@ -4,65 +4,77 @@ import Alamofire
 @testable import Logging
 
 final class XCNetworkingTests: XCTestCase {
-    func testData() async {
-        let request = BaseRequest<BaseModel>()
-        let result = await nw.fire(request)
+    func testSteam() async {
+        let req = XCTee<Model>(RequestModel(query: "今天几号"))
+        req.streamHandler = self.streamHandler
+        let result = await nw.stream(req)
         switch result {
-        case .success(let model):
-            let msg = if model.code == 0 {
-                model.data?.autopay ?? "成功"
-            } else {
-                model.msg ?? "Error"
+        case .success:
+            print(1)
+        case .failure(let failure):
+            print(failure)
+        }
+    }
+    // (Result<Data,NWError>) -> Void
+    func streamHandler(_ result: Data) {
+        let string = String(data: result, encoding: .utf8)
+        print(string)
+    }
+    var expectation: XCTestExpectation!
+    func testAaa() {
+        /*
+         curl --location 'http://18.220.53.146:10087/api/v1/search/stream' \
+         -X POST \
+         -H 'Content-Type: application/json' \
+         -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1NTQzLCJyZWdpc3Rlcl90eXBlIjoicGhvbmUiLCJhcHBfbmFtZSI6IkNoaXRDaGF0X2lPUyIsInRva2VuX2lkIjoiYjUyNWIxMzItZmM2My00YWMwLTgxN2QtMjdmZjczNDZlYzliIiwiaXNzIjoiZGV2Lndpc2Vob29kLmFpIiwiYXVkIjpbIiJdLCJleHAiOjE3NDI2OTUzNzgsIm5iZiI6MTcxMTU5MTM3OCwiaWF0IjoxNzExNTkxMzc4fQ.5ipqxQhCJKeYCZ2ezNZlJrvb7Fc_R1bcZYuIzmEHZaU' \
+         -d '{"query": "今天几号"}'
+         */
+        let url = "http://18.220.53.146:10087/api/v1/search/stream"
+        self.expectation = expectation(description: "Login ···")
+        let model = RequestModel(query: "今天几号")
+        AF.streamRequest(
+            url,
+            method: .post,
+            parameters: model,
+            encoder: JSONParameterEncoder.default,
+            headers: HTTPHeaders(["Authorization":testToken]),
+            automaticallyCancelOnStreamError: true,
+            interceptor: nil,
+            requestModifier: nil
+        )
+        .responseStream { result in
+            switch result.event {
+            case let .stream(result):
+                switch result {
+                case let .success(data):
+                    let string = String(data: data, encoding: .utf8)
+                    print(string)
+                }
+            case let .complete(completion):
+                print(completion)
+                self.expectation.fulfill()
             }
-            Logger(label: "test").info(.init(stringLiteral: msg))
-        case .failure(let error):
-            Logger(label: "test").error(.init(stringLiteral: error.reason))
         }
-    }
-    
-    func testUpload() async {
-        let file_url = Bundle.main.url(forResource: "xxx", withExtension: "png")
-        let request = BaseRequest<BaseModel>()
-        request.files = [file_url]
-        request.uploadProgress = self.upload
-        let result = await nw.upload(request)
-        switch result {
-        case .success(let model):
-            Logger(label: "test").info(.init(stringLiteral: "成功"))
-        case .failure(let error):
-            Logger(label: "test").error(.init(stringLiteral: error.reason))
-        }
-    }
-    func upload(progress: Progress) {
-        Logger(label: "test").info(.init(stringLiteral: "\(progress.totalUnitCount / progress.completedUnitCount)"))
-    }
-    
-    func testDownload() async {
-        let request = BaseRequest<BaseModel>()
-        request.downloadProgress = self.download
-        let result = await nw.download(request)
-        switch result {
-        case .success(let model):
-            Logger(label: "test").info(.init(stringLiteral: "成功"))
-        case .failure(let error):
-            Logger(label: "test").error(.init(stringLiteral: error.reason))
-        }
-    }
-    func download(progress: Progress) {
-        Logger(label: "test").info(.init(stringLiteral: "\(progress.totalUnitCount / progress.completedUnitCount)"))
-        XCTee<BaseModel>()
+        self.wait(for: [self.expectation], timeout: 300)
     }
 }
 
+struct RequestModel: Json {
+    let query: String
+}
+
+struct Model: Json {
+    
+}
 
 class BaseRequest<T: Json>: NWRequest<T> {
     
-    override func host() -> String {
-        return "baidu.com"
+    override func scheme() -> String {
+        return "http"
     }
     
-    override func path() -> String {
-        return "/light/v1/user_info"
+    override func host() -> String {
+        return "18.220.53.146:10087"
     }
     
     override func method() -> NWMethod {
@@ -76,7 +88,22 @@ class BaseRequest<T: Json>: NWRequest<T> {
 
 class XCTee<T: Json>: BaseRequest<T> {
     override func path() -> String {
-        return "/light/v1/user_info"
+        return "/api/v1/search/stream"
+    }
+    
+    override func timeout() -> TimeInterval {
+        return 300
+    }
+    
+    override func interceptors() -> (any NWInterceptor)? {
+        return BaseRequestInterceptor()
+    }
+    
+    init(
+        _ args: Encodable
+    ) {
+        super.init()
+        self.args = args
     }
 }
 
@@ -84,61 +111,11 @@ class BaseRequestInterceptor: NWInterceptor {
     func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
         var request = urlRequest
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue("635832b8-402f-4112-8803-9312961f9510", forHTTPHeaderField: "token")
-        request.addValue("9bcd60b7794cb1fed055c789fe1d93be", forHTTPHeaderField: "sign")
-        request.addValue("21", forHTTPHeaderField: "version")
-        request.addValue("ios", forHTTPHeaderField: "oem")
-        request.addValue("iPhone X", forHTTPHeaderField: "brand")
-        request.addValue("gf", forHTTPHeaderField: "qudao")
-        request.addValue("2", forHTTPHeaderField: "v2")
+        request.addValue(testToken, forHTTPHeaderField: "Authorization")
         completion(.success(request))
     }
 }
 
-// MARK: - BaseModel
-struct BaseModel: Json {
-    let code: Int?
-    let data: UserinfoModel?
-    let msg: String?
-}
-
-// MARK: - UserinfoModel
-struct UserinfoModel: Json {
-    let allnum: Int?
-    let autopay: String?
-    let code, contactEmail, email, expireDate: String?
-    let expireTimestamp, id: Int?
-    let ip: String?
-    let isNewer: Int?
-    let kefu: String?
-    let openBoxTimes: Int?
-    let payHTML: String?
-    let phone: String?
-    let pointBalance: Int?
-    let privacyAgreement, problem: String?
-    let share: String?
-    let shareQrcode: String?
-    let userAgreement: String?
-    let username: String?
-    let vip: Int?
-
-    enum CodingKeys: String, CodingKey {
-        case allnum, autopay, code
-        case contactEmail = "contact_email"
-        case email
-        case expireDate = "expire_date"
-        case expireTimestamp = "expire_timestamp"
-        case id, ip
-        case isNewer = "is_newer"
-        case kefu
-        case openBoxTimes = "open_box_times"
-        case payHTML = "pay_html"
-        case phone
-        case pointBalance = "point_balance"
-        case privacyAgreement = "privacy_agreement"
-        case problem, share
-        case shareQrcode = "share_qrcode"
-        case userAgreement = "user_agreement"
-        case username, vip
-    }
-}
+let testToken = """
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1NTQzLCJyZWdpc3Rlcl90eXBlIjoicGhvbmUiLCJhcHBfbmFtZSI6IkNoaXRDaGF0X2lPUyIsInRva2VuX2lkIjoiYjUyNWIxMzItZmM2My00YWMwLTgxN2QtMjdmZjczNDZlYzliIiwiaXNzIjoiZGV2Lndpc2Vob29kLmFpIiwiYXVkIjpbIiJdLCJleHAiOjE3NDI2OTUzNzgsIm5iZiI6MTcxMTU5MTM3OCwiaWF0IjoxNzExNTkxMzc4fQ.5ipqxQhCJKeYCZ2ezNZlJrvb7Fc_R1bcZYuIzmEHZaU
+"""
