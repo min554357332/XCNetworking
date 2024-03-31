@@ -114,7 +114,7 @@ private extension NWAlamofireKernel {
         afrequest.responseData(
             dataPreprocessor: request.responsePreprocessor ?? DataResponseSerializer.defaultDataPreprocessor,
             completionHandler: self.downloadCompletionHandler(continuation)
-        )
+        ).resume()
     }
     
     func streamResume<T: Json>(
@@ -122,7 +122,7 @@ private extension NWAlamofireKernel {
         request: NWRequest<T>,
         continuation: NWContinuation
     ) {
-        afrequest.responseStream(stream: self.streamCompletionHandler(continuation, request: request))
+        afrequest.responseStream(stream: self.streamCompletionHandler(continuation, request: request)).resume()
     }
     
     func completionHandler(
