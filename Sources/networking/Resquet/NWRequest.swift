@@ -10,10 +10,13 @@ import Alamofire
 // <T: Decodable>(of type: T.Type,
 open class NWRequest<T: Json> {
     
+    public var args: Encodable?
+    
     public init() {}
     
     public typealias ProgressHandler = (Progress) -> Void
     public typealias RequestModifier = (inout URLRequest) throws -> Void
+    public typealias StreamHandler = (Data) -> Void
     
     open func scheme() -> String {
         #if DEBUG
@@ -104,11 +107,19 @@ open class NWRequest<T: Json> {
     
     public var downloadProgress: ProgressHandler?
     
+    public var streamHandler: StreamHandler?
+    
     
     public func url() throws -> URL {
         var urlComponents = URLComponents()
         urlComponents.scheme = self.scheme()
-        urlComponents.host = self.host()
+        if self.host().hasPort() {
+            let deconstruction = self.host().components(separatedBy: ":")
+            urlComponents.host = deconstruction[0]
+            urlComponents.port = Int(deconstruction[1])
+        } else {
+            urlComponents.host = self.host()
+        }
         urlComponents.path = self.path()
         urlComponents.queryItems = self.query?.map({ k,v in
             return URLQueryItem(name: k, value: v)
@@ -161,5 +172,11 @@ extension URLRequest {
         set {
             Holder._nwRequestProperty[self.debugDescription] = newValue
         }
+    }
+}
+
+extension String {
+    func hasPort() -> Bool {
+        return self.contains(":")
     }
 }

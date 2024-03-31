@@ -12,6 +12,8 @@ public typealias NWKernelResult = Result<Data,NWError>
 
 public typealias NWResult<T: Json> = Result<T,NWError>
 
+public typealias NWEmptyResult = Result<Void,NWError>
+
 typealias NWContinuation = UnsafeContinuation<NWKernelResult, Never>
 
 public protocol Json: Codable {
@@ -92,6 +94,18 @@ class NWAdapter {
                 return .failure(NWError(NWResponseStatus(statusCode: 10003),
                                         reason: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
+    
+    public static func stream<T: Json>(
+        _ request: NWRequest<T>
+    ) async -> NWEmptyResult {
+        let result = await NWKernel.stream(request)
+        switch result {
+        case .success(let data):
+            return .success(())
         case .failure(let error):
             return .failure(error)
         }

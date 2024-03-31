@@ -66,6 +66,20 @@ extension NWAlamofireKernel {
                                     reason: error.localizedDescription))
         }
     }
+    
+    public func stream<T>(
+        _ request: NWRequest<T>
+    ) async -> NWKernelResult {
+        do {
+            let streamRequest = try self.streamRequest(request)
+            return await withUnsafeContinuation { continuation in
+                self.streamResume(streamRequest, request: request, continuation: continuation)
+            }
+        } catch {
+            return .failure(NWError(NWResponseStatus(statusCode: 10002),
+                                    reason: error.localizedDescription))
+        }
+    }
 }
 
 private extension NWAlamofireKernel {
@@ -103,6 +117,14 @@ private extension NWAlamofireKernel {
         )
     }
     
+    func streamResume<T: Json>(
+        _ afrequest: DataStreamRequest,
+        request: NWRequest<T>,
+        continuation: NWContinuation
+    ) {
+        afrequest.responseStream(stream: self.streamCompletionHandler(continuation, request: request))
+    }
+    
     func completionHandler(
         _ continuation: NWContinuation
     ) -> (AFDataResponse<Data>) -> Void {
@@ -130,6 +152,37 @@ private extension NWAlamofireKernel {
                 let responseStatus = NWResponseStatus(statusCode: error.responseCode ?? 10001)
                 return continuation.resume(returning: .failure(NWError(responseStatus,
                                                                        reason: error.localizedDescription)))
+            }
+        }
+        return handler
+    }
+    
+    func streamCompletionHandler<T: Json>(
+        _ continuation: NWContinuation,
+        request: NWRequest<T>
+    ) -> (DataStreamRequest.Stream<Data, Never>) -> Void {
+        let handler: (DataStreamRequest.Stream<Data, Never>) -> Void = { response in
+            switch response.event {
+            case let .stream(result):
+                switch result {
+                case let .success(data):
+                    request.streamHandler?(data)
+                }
+            case let .complete(completion):
+                if let error = completion.error {
+                    let responseStatus = NWResponseStatus(statusCode: error.responseCode ?? 10001)
+                    return continuation.resume(returning: .failure(NWError(responseStatus,
+                                                                           reason: error.localizedDescription)))
+                } else if let response = completion.response, response.statusCode != NWResponseStatus.ok.code {
+                    let responseStatus = NWResponseStatus(statusCode: response.statusCode)
+                    return continuation.resume(returning: .failure(NWError(responseStatus,
+                                                                           reason: NWResponseStatus(statusCode: response.statusCode).reasonPhrase)))
+                } else if let response = completion.response, response.statusCode == NWResponseStatus.ok.code  {
+                    return continuation.resume(returning: .success(Data()))
+                } else {
+                    return continuation.resume(returning: .failure(NWError(.badRequest,
+                                                                           reason: NWResponseStatus.badRequest.reasonPhrase)))
+                }
             }
         }
         return handler
@@ -217,6 +270,45 @@ private extension NWAlamofireKernel {
         )
         request.afRequest = afRequest
         return afRequest
+    }
+    
+    func streamRequest<T: Json>(
+        _ request: NWRequest<T>
+    ) throws -> DataStreamRequest {
+        let url = try request.url()
+        let header = if request.header != nil {
+            HTTPHeaders(request.header!)
+        } else {
+            HTTPHeaders()
+        }
+        
+        if request.args == nil {
+            let afRequest = AF.streamRequest(
+                url,
+                method: HTTPMethod(rawValue: request.method().rawValue),
+                headers: header,
+                automaticallyCancelOnStreamError: true,
+                interceptor: request.interceptors()
+            ) { req in
+                try self.requestModifier(request, urlRequest: &req)
+            }
+            return afRequest
+        } else {
+            let afRequest = AF.streamRequest(
+                url,
+                method: HTTPMethod(rawValue: request.method().rawValue),
+                parameters: request.args!,
+                encoder: JSONParameterEncoder.default,
+                headers: header,
+                automaticallyCancelOnStreamError: true,
+                interceptor: request.interceptors()
+            ) { req in
+                try self.requestModifier(request, urlRequest: &req)
+            }
+            return afRequest
+        }
+        
+        
     }
 }
 
