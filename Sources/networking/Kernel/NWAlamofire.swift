@@ -228,5 +228,6 @@ private extension NWAlamofireKernel {
         urlRequest.timeoutInterval = request.timeout()
         urlRequest.nwRequest = request
         request.header = urlRequest.headers.dictionary
+        try request.requestModifier?(&urlRequest)
     }
 }
