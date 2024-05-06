@@ -15,6 +15,7 @@ open class NWRequest<T: Json> {
     public init() {}
     
     public typealias ProgressHandler = (Progress) -> Void
+    public typealias RequestModifier = (inout URLRequest) throws -> Void
     public typealias StreamHandler = (Data) -> Void
     
     open func scheme() -> String {
@@ -97,6 +98,9 @@ open class NWRequest<T: Json> {
             }
         }
     }
+    
+    
+    public var requestModifier: RequestModifier?
     
     public var needRequestState: Request.State?
     
