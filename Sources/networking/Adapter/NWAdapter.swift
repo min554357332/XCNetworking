@@ -101,11 +101,17 @@ class NWAdapter {
     
     public static func stream<T: Json>(
         _ request: NWRequest<T>
-    ) async -> NWEmptyResult {
+    ) async -> NWResult<T> {
         let result = await NWKernel.stream(request)
         switch result {
         case .success(let data):
-            return .success(())
+            do {
+                let model = try JSONDecoder().decode(T.self, from: data)
+                return .success(model)
+            } catch {
+                return .failure(NWError(NWResponseStatus(statusCode: 10003),
+                                        reason: error.localizedDescription))
+            }
         case .failure(let error):
             return .failure(error)
         }
