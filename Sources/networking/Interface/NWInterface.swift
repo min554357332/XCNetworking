@@ -31,7 +31,7 @@ public struct NWInterface {
     
     public static func stream<T: Json>(
         _ request: NWRequest<T>
-    ) async -> NWResult<T> {
+    ) async -> Result<(), NWError> {
         return await NWAdapter.stream(request)
     }
 }
