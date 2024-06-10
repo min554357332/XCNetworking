@@ -122,6 +122,9 @@ private extension NWAlamofireKernel {
         request: NWRequest<T>,
         continuation: NWContinuation
     ) {
+        afrequest.onHTTPResponse { response in
+            print(1)
+        }
         afrequest.responseStream(stream: self.streamCompletionHandler(continuation, request: request)).resume()
     }
     
