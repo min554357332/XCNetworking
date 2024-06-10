@@ -203,6 +203,7 @@ private extension NWAlamofireKernel {
             url,
             method: HTTPMethod(rawValue: request.method().rawValue),
             parameters: request.body,
+            encoding: request.encoding,
             headers: header,
             interceptor: request.interceptors(),
             requestModifier: { req in
@@ -261,6 +262,7 @@ private extension NWAlamofireKernel {
             url,
             method: HTTPMethod(rawValue: request.method().rawValue),
             parameters: request.body,
+            encoding: request.encoding,
             headers: header,
             interceptor: request.interceptors(),
             requestModifier: { req in
