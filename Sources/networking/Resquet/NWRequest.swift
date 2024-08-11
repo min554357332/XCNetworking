@@ -16,7 +16,7 @@ open class NWRequest<T: Json> {
     
     public typealias ProgressHandler = (Progress) -> Void
     public typealias RequestModifier = (inout URLRequest) throws -> Void
-    public typealias StreamHandler = (Data) -> Void
+    public typealias StreamHandler = (Data) async -> Void
     
     open func scheme() -> String {
         #if DEBUG
