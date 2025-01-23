@@ -236,7 +236,7 @@ private extension NWAlamofireKernel {
             
         },
             to: url,
-            usingThreshold: 0,
+            usingThreshold: MultipartFormData.encodingMemoryThreshold,
             method: HTTPMethod(rawValue: request.method().rawValue),
             headers: header,
             interceptor: request.interceptors(),

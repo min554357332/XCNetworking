@@ -81,6 +81,7 @@ open class NWRequest<T: Json> {
     public var files: [URL?]?
     public var responsePreprocessor: DataPreprocessor?
     public var encoding: ParameterEncoding = JSONEncoding.default
+    public var interceptor: NWInterceptor?
     
     // 处理下载的文件
     public var destination: DownloadRequest.Destination? = nil
