@@ -166,7 +166,9 @@ private extension NWAlamofireKernel {
             case let .stream(result):
                 switch result {
                 case let .success(data):
-                    request.streamHandler?(data)
+                    Task {
+                        await request.streamHandler?(data)
+                    }
                 }
             case let .complete(completion):
                 if let error = completion.error {
